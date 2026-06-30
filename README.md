@@ -61,6 +61,15 @@ Consumer берёт сообщение, эмулирует обработку (2
 Чтобы посмотреть retry и DLQ в действии, укажи в `webhook_url` недоступный адрес и загляни в
 очередь `payments.dlq` в RabbitMQ UI.
 
+## Тесты
+Юнит-тесты на API (авторизация, идемпотентность, валидация), ретраи webhook и outbox-relay.
+Гоняются без поднятия БД и RabbitMQ:
+
+```bash
+poetry install
+poetry run pytest
+```
+
 ## Конфигурация
 Все параметры в `.env` (см. `.env.example`): ключ API, доступы к postgres/rabbitmq, параметры
 эмуляции, число попыток webhook и интервал outbox-воркера.
