@@ -54,7 +54,7 @@ async def process_payment(message: dict) -> None:
         if payment is None:
             log.warning("payment %s not found, dropping", payment_id)
             return
-        # idempotent: only emulate/charge once (a redelivered message won't re-charge)
+        # charge only once even if the message is redelivered
         if payment.status == PaymentStatus.PENDING.value:
             outcome = await _emulate_processing()
             payment = await repository.mark_payment_processed(session, payment_id, outcome)

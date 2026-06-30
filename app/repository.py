@@ -31,7 +31,7 @@ async def create_payment_with_outbox(
         status=PaymentStatus.PENDING.value,
     )
     session.add(payment)
-    await session.flush()  # assign payment.id before writing the outbox row
+    await session.flush()
     session.add(
         OutboxMessage(
             aggregate_id=payment.id,
@@ -39,7 +39,7 @@ async def create_payment_with_outbox(
             payload={"payment_id": str(payment.id)},
         )
     )
-    await session.commit()  # payment + outbox committed atomically
+    await session.commit()
     await session.refresh(payment)
     return payment
 
@@ -66,7 +66,7 @@ async def mark_payment_processed(
 ) -> Payment | None:
     payment = await session.get(Payment, payment_id)
     if payment is None or payment.status != PaymentStatus.PENDING.value:
-        return payment  # idempotent: already processed or missing
+        return payment
     payment.status = status.value
     payment.processed_at = datetime.now(timezone.utc)
     await session.commit()

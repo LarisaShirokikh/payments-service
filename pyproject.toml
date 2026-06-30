@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "payments-service"
+version = "1.0.0"
+description = "Async payment processing microservice"
+authors = ["Larisa Shirokikh <lorashirokikh@yandex.ru>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "0.115.6"
+uvicorn = {extras = ["standard"], version = "0.34.0"}
+pydantic = "2.10.4"
+pydantic-settings = "2.7.1"
+sqlalchemy = {extras = ["asyncio"], version = "2.0.36"}
+asyncpg = "0.30.0"
+alembic = "1.14.0"
+faststream = {extras = ["rabbit", "cli"], version = "0.5.34"}
+httpx = "0.28.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
