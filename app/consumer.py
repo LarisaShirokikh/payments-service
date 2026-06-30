@@ -29,7 +29,6 @@ async def _emulate_processing() -> PaymentStatus:
 
 
 async def _deliver_webhook(url: str, payload: dict) -> None:
-    """POST the webhook with up to N attempts and exponential backoff; raise on final failure."""
     last_exc: Exception | None = None
     async with httpx.AsyncClient(timeout=settings.webhook_timeout_seconds) as client:
         for attempt in range(1, settings.webhook_max_attempts + 1):
@@ -37,12 +36,12 @@ async def _deliver_webhook(url: str, payload: dict) -> None:
                 response = await client.post(url, json=payload)
                 response.raise_for_status()
                 return
-            except Exception as exc:  # noqa: BLE001
+            except Exception as exc:
                 last_exc = exc
                 log.warning("webhook attempt %d/%d failed: %s", attempt, settings.webhook_max_attempts, exc)
                 if attempt < settings.webhook_max_attempts:
                     await asyncio.sleep(settings.webhook_backoff_base_seconds * 2 ** (attempt - 1))
-    raise last_exc  # type: ignore[misc]
+    raise last_exc
 
 
 @broker.subscriber(NEW_QUEUE)
@@ -54,7 +53,6 @@ async def process_payment(message: dict) -> None:
         if payment is None:
             log.warning("payment %s not found, dropping", payment_id)
             return
-        # charge only once even if the message is redelivered
         if payment.status == PaymentStatus.PENDING.value:
             outcome = await _emulate_processing()
             payment = await repository.mark_payment_processed(session, payment_id, outcome)
@@ -74,6 +72,6 @@ async def process_payment(message: dict) -> None:
     try:
         await _deliver_webhook(payment.webhook_url, webhook_payload)
         log.info("webhook delivered for payment %s", payment_id)
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         log.error("webhook for %s failed after %d attempts, routing to DLQ", payment_id, settings.webhook_max_attempts)
         await publish_to_dlq({**message, "status": payment.status, "reason": f"webhook delivery failed: {exc}"})

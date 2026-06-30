@@ -4,7 +4,6 @@ from app.config import settings
 
 broker = RabbitBroker(settings.rabbitmq_url)
 
-# main work queue; failed messages dead-letter (via the default exchange) to payments.dlq
 NEW_QUEUE = RabbitQueue(
     "payments.new",
     durable=True,

@@ -27,6 +27,6 @@ async def outbox_relay_loop() -> None:
             published = await relay_once()
             if published:
                 log.info("published %d outbox message(s)", published)
-        except Exception:  # noqa: BLE001
+        except Exception:
             log.exception("outbox relay cycle failed")
         await asyncio.sleep(settings.outbox_poll_interval_seconds)
